@@ -1,0 +1,813 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080d18">
+    <meta name="description" content="MyFinance - Personal Finance and Trading Dashboard">
+
+    <title>MyFinance</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./icons/icon-192.png" type="image/png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- JavaScript -->
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+
+    <!-- ================= AUTHENTICATION ================= -->
+
+    <section id="authScreen" class="auth-screen">
+
+        <!-- SIGN UP -->
+        <div id="signupPanel" class="auth-panel">
+            <div class="auth-logo">MF</div>
+            <h1>MyFinance</h1>
+            <p>Create your personal finance account</p>
+
+            <form id="signupForm">
+                <input
+                    type="text"
+                    id="newUsername"
+                    placeholder="Username"
+                    required
+                    autocomplete="username"
+                >
+
+                <input
+                    type="password"
+                    id="newPassword"
+                    placeholder="Password"
+                    required
+                    autocomplete="new-password"
+                >
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm password"
+                    required
+                    autocomplete="new-password"
+                >
+
+                <input
+                    type="password"
+                    id="newPin"
+                    placeholder="Create 4-digit PIN"
+                    maxlength="4"
+                    inputmode="numeric"
+                    required
+                >
+
+                <button type="submit" class="primary-btn">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                Already have an account?
+                <button type="button" id="showLogin">Login</button>
+            </p>
+        </div>
+
+
+        <!-- LOGIN -->
+        <div id="loginPanel" class="auth-panel hidden">
+            <div class="auth-logo">MF</div>
+            <h1>Welcome Back</h1>
+            <p>Login to your MyFinance account</p>
+
+            <form id="loginForm">
+                <input
+                    type="text"
+                    id="loginUsername"
+                    placeholder="Username"
+                    required
+                    autocomplete="username"
+                >
+
+                <input
+                    type="password"
+                    id="loginPassword"
+                    placeholder="Password"
+                    required
+                    autocomplete="current-password"
+                >
+
+                <button type="submit" class="primary-btn">
+                    Login
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                New here?
+                <button type="button" id="showSignup">Create account</button>
+            </p>
+        </div>
+
+
+        <!-- PIN LOCK -->
+        <div id="pinPanel" class="auth-panel hidden">
+            <div class="auth-logo">MF</div>
+            <h1>Enter Your PIN</h1>
+            <p id="pinUsername">Welcome back</p>
+
+            <div id="pinDots" class="pin-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <p id="pinMessage" class="pin-message">
+                Enter your 4-digit PIN
+            </p>
+
+            <div class="pin-keypad">
+                <button type="button" class="key" data-key="1">1</button>
+                <button type="button" class="key" data-key="2">2</button>
+                <button type="button" class="key" data-key="3">3</button>
+
+                <button type="button" class="key" data-key="4">4</button>
+                <button type="button" class="key" data-key="5">5</button>
+                <button type="button" class="key" data-key="6">6</button>
+
+                <button type="button" class="key" data-key="7">7</button>
+                <button type="button" class="key" data-key="8">8</button>
+                <button type="button" class="key" data-key="9">9</button>
+
+                <button type="button" class="key key-action" data-key="switch">↻</button>
+                <button type="button" class="key" data-key="0">0</button>
+                <button type="button" class="key key-action" data-key="delete">⌫</button>
+            </div>
+
+            <button type="button" id="forgotPin" class="text-btn">
+                Forgot PIN?
+            </button>
+
+            <button type="button" id="pinSwitchAccount" class="text-btn">
+                Switch Account
+            </button>
+        </div>
+
+    </section>
+
+
+    <!-- ================= MAIN APPLICATION ================= -->
+
+    <div id="app" class="app hidden">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">MF</div>
+                <span>MyFinance</span>
+            </div>
+
+            <div class="sidebar-user">
+                <span class="small-label">CURRENT ACCOUNT</span>
+                <strong id="sidebarUsername">User</strong>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-link active" data-page="dashboard">
+                    <span>▦</span> Dashboard
+                </button>
+
+                <button class="nav-link" data-page="accounts">
+                    <span>▣</span> Accounts
+                </button>
+
+                <button class="nav-link" data-page="transactions">
+                    <span>⇄</span> Transactions
+                </button>
+
+                <button class="nav-link" data-page="settings">
+                    <span>⚙</span> Settings
+                </button>
+            </nav>
+
+            <div class="sidebar-account-area">
+                <div class="sidebar-section-title">
+                    <span>MY ACCOUNTS</span>
+                    <button type="button" id="quickAddAccount">+</button>
+                </div>
+
+                <div id="sidebarAccounts"></div>
+            </div>
+
+            <div class="sidebar-bottom">
+                <button type="button" id="lockNowBtn">
+                    🔒 Lock App
+                </button>
+
+                <button type="button" id="logoutBtn">
+                    ↪ Logout
+                </button>
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div>
+                    <span class="small-label">PERSONAL FINANCE</span>
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
+
+                <div class="topbar-actions">
+                    <button type="button" id="topRefreshMarket" class="icon-btn">
+                        ↻
+                    </button>
+
+                    <button type="button" id="topAddTransaction" class="primary-btn">
+                        + Add Transaction
+                    </button>
+                </div>
+            </header>
+
+
+            <!-- ================= DASHBOARD PAGE ================= -->
+
+            <section id="dashboardPage" class="page page-section active">
+
+                <!-- SUMMARY CARDS -->
+                <div class="stats-grid">
+
+                    <article class="widget stat-card">
+                        <div class="stat-heading">
+                            <span>Total Balance</span>
+                            <span class="stat-icon blue">◈</span>
+                        </div>
+                        <h2 id="totalBalance">--</h2>
+                        <p>Across all accounts</p>
+                    </article>
+
+                    <article class="widget stat-card">
+                        <div class="stat-heading">
+                            <span>Total Accounts</span>
+                            <span class="stat-icon purple">▣</span>
+                        </div>
+                        <h2 id="totalAccounts">0</h2>
+                        <p>Your active accounts</p>
+                    </article>
+
+                    <article class="widget stat-card">
+                        <div class="stat-heading">
+                            <span>Weekly Profit</span>
+                            <span class="stat-icon green">↗</span>
+                        </div>
+                        <h2 id="weeklyProfit">--</h2>
+                        <p>Trading profits</p>
+                    </article>
+
+                    <article class="widget stat-card">
+                        <div class="stat-heading">
+                            <span>Weekly Loss</span>
+                            <span class="stat-icon red">↘</span>
+                        </div>
+                        <h2 id="weeklyLoss">--</h2>
+                        <p>Trading losses</p>
+                    </article>
+
+                </div>
+
+
+                <!-- CHARTS -->
+                <div class="dashboard-grid">
+
+                    <!-- CAPITAL DISTRIBUTION -->
+                    <article class="widget chart-widget">
+                        <div class="widget-header">
+                            <div>
+                                <span class="small-label">OVERVIEW</span>
+                                <h3>Capital Distribution</h3>
+                            </div>
+                        </div>
+
+                        <div class="capital-chart-area">
+                            <div id="capitalChart" class="capital-chart">
+                                <div class="chart-center">
+                                    <span>Total Capital</span>
+                                    <strong id="chartTotal">--</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="capitalLegend" class="chart-legend"></div>
+                    </article>
+
+
+                    <!-- PROFIT AND LOSS -->
+                    <article class="widget pnl-widget">
+                        <div class="widget-header">
+                            <div>
+                                <span class="small-label">PERFORMANCE</span>
+                                <h3>Profit & Loss</h3>
+                            </div>
+
+                            <select id="pnlPeriod">
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+
+                        <div class="pnl-total">
+                            <span>Net Result</span>
+                            <h2 id="periodNet">--</h2>
+                        </div>
+
+                        <div class="pnl-row">
+                            <span>Profit</span>
+                            <strong id="periodProfit">--</strong>
+                        </div>
+
+                        <div class="pnl-bar">
+                            <div id="profitBar" class="profit-bar"></div>
+                        </div>
+
+                        <div class="pnl-row">
+                            <span>Loss</span>
+                            <strong id="periodLoss">--</strong>
+                        </div>
+
+                        <div class="pnl-bar">
+                            <div id="lossBar" class="loss-bar"></div>
+                        </div>
+
+                        <div class="pnl-footer">
+                            <span id="periodStatus">Performance overview</span>
+                            <strong id="monthlyGrowth">--</strong>
+                        </div>
+                    </article>
+
+                </div>
+
+
+                <!-- ACCOUNTS ON DASHBOARD -->
+                <article class="widget dashboard-accounts-widget">
+
+                    <div class="widget-header">
+                        <div>
+                            <span class="small-label">YOUR PORTFOLIO</span>
+                            <h3>My Accounts</h3>
+                        </div>
+
+                        <button type="button" id="dashboardAddAccount" class="outline-btn">
+                            + Add Account
+                        </button>
+                    </div>
+
+                    <div id="dashboardAccounts" class="accounts-grid"></div>
+
+                </article>
+
+
+                <!-- MARKET PRICES -->
+                <article class="widget market-widget">
+
+                    <div class="widget-header">
+                        <div>
+                            <span class="small-label">LIVE MARKET</span>
+                            <h3>Market Overview</h3>
+                        </div>
+
+                        <button type="button" id="refreshMarket" class="outline-btn">
+                            ↻ Refresh
+                        </button>
+                    </div>
+
+                    <div class="market-grid">
+
+                        <div class="market-card">
+                            <div class="market-name">
+                                <span class="coin-icon bitcoin">₿</span>
+                                <span>Bitcoin</span>
+                            </div>
+                            <h3 id="btcPrice">Loading...</h3>
+                            <span id="btcChange">--</span>
+                        </div>
+
+                        <div class="market-card">
+                            <div class="market-name">
+                                <span class="coin-icon dollar">$</span>
+                                <span>US Dollar</span>
+                            </div>
+                            <h3 id="usdPrice">Loading...</h3>
+                            <span id="usdChange">--</span>
+                        </div>
+
+                        <div class="market-card">
+                            <div class="market-name">
+                                <span class="coin-icon ethereum">Ξ</span>
+                                <span>Ethereum</span>
+                            </div>
+                            <h3 id="ethPrice">Loading...</h3>
+                            <span id="ethChange">--</span>
+                        </div>
+
+                    </div>
+
+                    <p id="marketUpdated" class="market-updated">
+                        Waiting for market data...
+                    </p>
+
+                </article>
+
+            </section>
+
+
+            <!-- ================= ACCOUNTS PAGE ================= -->
+
+            <section id="accountsPage" class="page page-section hidden">
+
+                <div class="section-heading">
+                    <div>
+                        <span class="small-label">PORTFOLIO</span>
+                        <h3>All Accounts</h3>
+                    </div>
+
+                    <button type="button" id="addAccountBtn" class="primary-btn">
+                        + Add Account
+                    </button>
+                </div>
+
+                <div id="allAccounts" class="accounts-grid"></div>
+
+            </section>
+
+
+            <!-- ================= ACCOUNT DETAILS ================= -->
+
+            <section id="accountDetailPage" class="page page-section hidden">
+
+                <button type="button" id="backToAccounts" class="outline-btn">
+                    ← Back to Accounts
+                </button>
+
+                <div class="account-detail-heading">
+                    <div>
+                        <span class="small-label">ACCOUNT DETAILS</span>
+                        <h2 id="detailAccountName">Account</h2>
+                        <span id="detailAccountType">Account Type</span>
+                    </div>
+                </div>
+
+                <article class="widget detail-balance-card">
+                    <span>Current Balance</span>
+                    <h1 id="detailBalance">--</h1>
+                    <span id="detailCurrency">USD</span>
+                </article>
+
+                <div class="stats-grid detail-stats">
+
+                    <article class="widget stat-card">
+                        <span>Total Deposits</span>
+                        <h3 id="detailDeposits">--</h3>
+                    </article>
+
+                    <article class="widget stat-card">
+                        <span>Total Withdrawals</span>
+                        <h3 id="detailWithdrawals">--</h3>
+                    </article>
+
+                    <article class="widget stat-card">
+                        <span>Trading Profit</span>
+                        <h3 id="detailProfit">--</h3>
+                    </article>
+
+                    <article class="widget stat-card">
+                        <span>Trading Loss</span>
+                        <h3 id="detailLoss">--</h3>
+                    </article>
+
+                </div>
+
+                <article class="widget">
+                    <div class="widget-header">
+                        <h3>Account Transactions</h3>
+
+                        <button type="button" id="detailAddTransaction" class="primary-btn">
+                            + Add Transaction
+                        </button>
+                    </div>
+
+                    <div id="detailTransactionsList"></div>
+
+                    <p id="detailEmptyMessage" class="empty-message hidden">
+                        No transactions found.
+                    </p>
+                </article>
+
+            </section>
+
+
+            <!-- ================= TRANSACTIONS PAGE ================= -->
+
+            <section id="transactionsPage" class="page page-section hidden">
+
+                <div class="section-heading">
+                    <div>
+                        <span class="small-label">ACTIVITY</span>
+                        <h3>All Transactions</h3>
+                    </div>
+
+                    <button type="button" id="addTransactionBtn" class="primary-btn">
+                        + Add Transaction
+                    </button>
+                </div>
+
+                <div class="widget transaction-tools">
+
+                    <input
+                        type="search"
+                        id="transactionSearch"
+                        placeholder="Search transactions..."
+                    >
+
+                    <select id="transactionFilter">
+                        <option value="all">All Transactions</option>
+                        <option value="deposit">Deposits</option>
+                        <option value="withdraw">Withdrawals</option>
+                        <option value="trade-profit">Trading Profits</option>
+                        <option value="trade-loss">Trading Losses</option>
+                    </select>
+
+                </div>
+
+                <article class="widget">
+                    <div id="allTransactions"></div>
+
+                    <p id="emptyMessage" class="empty-message hidden">
+                        No transactions found.
+                    </p>
+                </article>
+
+            </section>
+
+
+            <!-- ================= SETTINGS PAGE ================= -->
+
+            <section id="settingsPage" class="page page-section hidden">
+
+                <div class="section-heading">
+                    <div>
+                        <span class="small-label">PREFERENCES</span>
+                        <h3>Settings</h3>
+                    </div>
+                </div>
+
+                <article class="widget settings-card">
+                    <h3>Security</h3>
+                    <p>Manage your application PIN.</p>
+
+                    <button type="button" id="changePinBtn" class="primary-btn">
+                        Change PIN
+                    </button>
+                </article>
+
+                <article class="widget settings-card">
+                    <h3>Account Session</h3>
+                    <p>Lock the application or switch to another user.</p>
+
+                    <div class="settings-actions">
+                        <button type="button" id="settingsLogoutBtn" class="outline-btn">
+                            Switch Account
+                        </button>
+
+                        <button type="button" id="settingsSwitchBtn" class="outline-btn">
+                            Logout
+                        </button>
+                    </div>
+                </article>
+
+                <article class="widget settings-card">
+                    <h3>About MyFinance</h3>
+                    <p>Personal Finance and Trading Dashboard</p>
+                    <span>Version 2.0</span>
+                </article>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- ================= ACCOUNT MODAL ================= -->
+
+    <div id="accountModal" class="modal hidden">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3 id="accountModalTitle">Add Account</h3>
+                <button type="button" data-close="accountModal">×</button>
+            </div>
+
+            <form id="accountForm">
+
+                <label for="accountName">Account Name</label>
+                <input
+                    type="text"
+                    id="accountName"
+                    placeholder="e.g. Binance"
+                    required
+                >
+
+                <label for="accountType">Account Type</label>
+                <select id="accountType" required>
+                    <option value="Trading">Trading</option>
+                    <option value="Bank">Bank</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Savings">Savings</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label for="accountCurrency">Currency</label>
+                <select id="accountCurrency" required>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="IRR">IRR</option>
+                    <option value="Toman">Toman</option>
+                    <option value="USDT">USDT</option>
+                </select>
+
+                <label for="initialBalance">Initial Balance</label>
+                <input
+                    type="number"
+                    id="initialBalance"
+                    placeholder="0"
+                    step="any"
+                    required
+                >
+
+                <div class="modal-actions">
+                    <button type="button" class="outline-btn" data-close="accountModal">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="primary-btn">
+                        Save Account
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= TRANSACTION MODAL ================= -->
+
+    <div id="transactionModal" class="modal hidden">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3 id="transactionModalTitle">Add Transaction</h3>
+                <button type="button" data-close="transactionModal">×</button>
+            </div>
+
+            <form id="transactionForm">
+
+                <label for="transactionTitle">Title</label>
+                <input
+                    type="text"
+                    id="transactionTitle"
+                    placeholder="e.g. BTC Trade"
+                    required
+                >
+
+                <label for="transactionAccount">Account</label>
+                <select id="transactionAccount" required></select>
+
+                <label for="transactionType">Transaction Type</label>
+                <select id="transactionType" required>
+                    <option value="deposit">Deposit</option>
+                    <option value="withdraw">Withdrawal</option>
+                    <option value="trade-profit">Trading Profit</option>
+                    <option value="trade-loss">Trading Loss</option>
+                </select>
+
+                <label for="transactionAmount">Amount</label>
+                <input
+                    type="number"
+                    id="transactionAmount"
+                    placeholder="0"
+                    step="any"
+                    min="0"
+                    required
+                >
+
+                <label for="transactionDate">Date</label>
+                <input
+                    type="date"
+                    id="transactionDate"
+                    required
+                >
+
+                <label for="transactionDescription">Description</label>
+                <textarea
+                    id="transactionDescription"
+                    placeholder="Optional description..."
+                    rows="3"
+                ></textarea>
+
+                <div class="modal-actions">
+                    <button type="button" class="outline-btn" data-close="transactionModal">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="primary-btn">
+                        Save Transaction
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= CHANGE PIN MODAL ================= -->
+
+    <div id="pinModal" class="modal hidden">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3>Change PIN</h3>
+                <button type="button" data-close="pinModal">×</button>
+            </div>
+
+            <form id="pinForm">
+
+                <label for="currentPin">Current PIN</label>
+                <input
+                    type="password"
+                    id="currentPin"
+                    maxlength="4"
+                    inputmode="numeric"
+                    placeholder="Current 4-digit PIN"
+                    required
+                >
+
+                <label for="replacementPin">New PIN</label>
+                <input
+                    type="password"
+                    id="replacementPin"
+                    maxlength="4"
+                    inputmode="numeric"
+                    placeholder="New 4-digit PIN"
+                    required
+                >
+
+                <label for="confirmReplacementPin">Confirm New PIN</label>
+                <input
+                    type="password"
+                    id="confirmReplacementPin"
+                    maxlength="4"
+                    inputmode="numeric"
+                    placeholder="Confirm new PIN"
+                    required
+                >
+
+                <div class="modal-actions">
+                    <button type="button" class="outline-btn" data-close="pinModal">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="primary-btn">
+                        Update PIN
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= TOAST ================= -->
+
+    <div id="toast" class="toast"></div>
+
+</body>
+</html>
